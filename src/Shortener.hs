@@ -3,7 +3,8 @@
 module Shortener where
 
 import Control.Monad.IO.Class (MonadIO(liftIO))
-import Data.IORef (modifyIORef, newIORef)
+import Data.Foldable (for_)
+import Data.IORef (modifyIORef, newIORef, readIORef)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
@@ -16,7 +17,8 @@ shortener :: IO ()
 shortener = do
   urlsR <- newIORef (1 :: Int, mempty :: Map Int Text)
   scotty 3000 $ do
-    get "/" $
+    get "/" $ do
+      (_, urls) <- liftIO $ readIORef urlsR
       html $ renderHtml $
         H.html $
           H.body $ do
@@ -24,6 +26,11 @@ shortener = do
             H.form H.! A.method "post" H.! A.action "/" $ do
               H.input H.! A.type_ "text" H.! A.name "url"
               H.input H.! A.type_ "submit"
+            H.table $
+              for_ (M.toList urls) $ \(i, url) ->
+                H.tr $ do
+                  H.td (H.toHtml i)
+                  H.td (H.text url)
     post "/" $ do
       url <- param "url"
       liftIO $ modifyIORef urlsR $
