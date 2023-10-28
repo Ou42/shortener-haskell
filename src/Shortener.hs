@@ -7,7 +7,12 @@ import Data.Foldable (for_)
 import Data.IORef (modifyIORef, newIORef, readIORef)
 import Data.Map (Map)
 import qualified Data.Map as M
-import Data.Text (Text)
+import Data.Maybe (fromJust)
+import Data.Text (Text, unpack)
+-- import qualified Data.Text.Lazy.Encoding as T
+-- import qualified Data.Text.Lazy.IO as T
+import Data.Text.Lazy (fromStrict)
+import qualified Network.HTTP.Types.Status as Status
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import qualified Text.Blaze.Html5 as H
 import qualified Text.Blaze.Html5.Attributes as A
@@ -39,4 +44,34 @@ shortener = do
       redirect "/"
     get "/:id" $ do
       urlID <- param "id"
-      liftIO $ putStrLn $ "id = " <> urlID
+      -- if `param "url"` is used, get error, param not found
+      (_, urls) <- liftIO $ readIORef urlsR
+
+      -- the following works, outputs to the terminal:
+      -- liftIO $ putStrLn $ "id = " <> urlID -- OUTPUTS TO THE TERMINAL
+
+      -- the following sorta works ...
+      -- redirect $ fromStrict $ fromJust $ M.lookup urlID urls
+
+      {-
+      let maybeDestURL = M.lookup urlID urls
+      case maybeDestURL of
+        Nothing -> status Status.status404
+        Just destURL -> redirect destURL
+
+        ERROR:
+        • Couldn't match expected type ‘Data.Text.Internal.Lazy.Text’
+              with actual type ‘Text’
+          NB: ‘Data.Text.Internal.Lazy.Text’
+                is defined in ‘Data.Text.Internal.Lazy’
+              ‘Text’ is defined in ‘Data.Text.Internal’
+      -}
+
+      -- the following outputs to the terminal
+      let maybeDestURL = M.lookup urlID urls
+      case maybeDestURL of
+        Nothing -> status Status.status404
+        -- Just destURL -> liftIO $ putStrLn $ unpack destURL
+        -- Just destURL -> liftIO $ putStrLn $ show destURL -- linter: why not use print ?!
+        -- Just destURL -> liftIO $ print destURL
+        Just destURL -> liftIO $ print (urlID, destURL)

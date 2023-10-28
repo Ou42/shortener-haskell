@@ -16,6 +16,7 @@ library
   build-depends:
       blaze-html >= 0.9
     , containers
+    , http-types >= 0.12
     , scotty >= 0.12
     , text
 
