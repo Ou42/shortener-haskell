@@ -37,3 +37,6 @@ shortener = do
         \(i, urls) ->
           (i + 1, M.insert i url urls)
       redirect "/"
+    get "/:id" $ do
+      urlID <- param "id"
+      liftIO $ putStrLn $ "id = " <> urlID
