@@ -47,7 +47,9 @@ shortener = do
         Just url -> redirect (LT.fromStrict url)
         -- the above "works" in that it does lookup
         -- the url, but it redirects to:
-        -- localhost:3000/<url>
-        -- and then says,
-        -- "404: File Not Found!"
+          -- localhost:3000/<url>
+          -- and then says,
+          -- "404: File Not Found!"
+        -- AH-HA!
+          -- url must contain `http://` or `https://` prefix
         Nothing  -> raiseStatus status404 "not found. Ya filthy animal!"
